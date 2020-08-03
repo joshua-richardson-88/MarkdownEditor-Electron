@@ -1,7 +1,6 @@
 const electron = require("electron");
-const fs = require('fs');
+const path = require('path');
 
-const dialog = electron.remote.dialog;
 const mainProcess = electron.remote.require('./main.js')
 
 const marked = require("marked");
