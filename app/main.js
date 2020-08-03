@@ -4,9 +4,10 @@ const { app, BrowserWindow } = require("electron");
 let mainWindow = null;
 
 app.on("ready", () => {
-  // Creates a new browser window and sets nodeIntegration to true
-  // so that we can use node modules in the renderer process
   mainWindow = new BrowserWindow({
+    // hide the window when it's first created
+    show: false,
+    // allow us to use require in HTML
     webPreferences: {
       nodeIntegration: true,
     },
@@ -14,6 +15,11 @@ app.on("ready", () => {
 
   //Loads the app/index.html in the main window
   mainWindow.webContents.loadURL(`file://${__dirname}/index.html`);
+
+  // Shows the window when the DOM is loaded
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
 
   //Sets the process back to null when the window is closed
   mainWindow.on("closed", () => {
