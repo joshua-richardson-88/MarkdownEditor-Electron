@@ -20,8 +20,6 @@ app.on("ready", () => {
   // Shows the window when the DOM is loaded
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
-    // Trigger file dialog here for now
-    getFileFromUser();
   });
 
   //Sets the process back to null when the window is closed
@@ -31,7 +29,8 @@ app.on("ready", () => {
 });
 
 // Wrapper function for dialog.showOpenDialog
-const getFileFromUser = () => {
+// We assign getFilesFrom user to the exports object to be used in renderer process
+const getFileFromUser = (exports.getFileFromUser = () => {
   // Triggers the OS's Open File dialog box, passing in config arguments
   // Passing in mainWindow allows macOS to display the dialog box as a
   // sheet coming down from the title bar of the window. No effect in
@@ -44,12 +43,13 @@ const getFileFromUser = () => {
     ],
   });
 
-  if (!files) return;
+  if (files) openFile(files[0]);
+});
 
-  const file = files[0];
-
-  // Read the file and convert the contents to a string
+const openFile = (file) => {
   const content = fs.readFileSync(file).toString();
 
-  console.log(content);
+  // We send the name of the file and its content to the renderer
+  // process over the "file-opened" channel
+  mainWindow.webContents.send("file-opened", file, content);
 };
