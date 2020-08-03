@@ -8,10 +8,37 @@ app.on("ready", () => {
   createWindow();
 });
 
+// Create a window when application is open and there are no windows
+// Also for macOS
+app.on("activate", (event, hasVisibleWindows) => {
+  if (!hasVisibleWindows) createWindow();
+});
+
+// Prevent electron from killing app on macOS
+app.on("window-all-closed", () => {
+  if (process.platform === "darwin") return false;
+  // quits the app if it isn't mac
+  app.quit();
+});
+
 // A function to create a new Browser window
 const createWindow = (exports.createWindow = () => {
+  let x, y;
+
+  // Gets the browser window that is currently active
+  const currentWindow = BrowserWindow.getFocusedWindow();
+
+  // if there is a current window, get its positions and move down and to the right
+  if (currentWindow) {
+    const [currentWindowX, currentWindowY] = currentWindow.getPosition();
+    x = currentWindowX + 25;
+    y = currentWindowY + 25;
+  }
+
   // Decalres mainWindow at the top level so that it won't be collected as garbage after the "ready" event completes
   let newWindow = new BrowserWindow({
+    x, // set the position of the window
+    y,
     // hide the window when it's first created
     show: false,
     // allow us to use require in HTML
