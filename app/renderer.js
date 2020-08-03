@@ -17,15 +17,25 @@ const saveHtmlButton = document.querySelector("#save-html");
 const showFileButton = document.querySelector("#show-file");
 const openInDefaultButton = document.querySelector("#open-in-default");
 
+// Global variables for tracking current file
+let currentFilePath = null;
+let originalContent = '';
+
 // ipcRenderer
 // Receiving
+// When we receive a file to open
 ipcRenderer.on('file-opened', (event, content) => {
-  if (content.length > 0) renderMarkdownToHtml(content);
+  //if the filePath is given
+  if (content.path.length > 0) currentFilePath = content.path;
+  if (content.text.length > 0) {
+    originalContent = content.text;
+    renderMarkdownToHtml(content.text);
+  }
 });
 
 // helper function wrapping the marked module
 const renderMarkdownToHtml = (markdown) => {
-  markdownView.innerHTML = markdown;
+  markdownView.value = markdown;
   htmlView.innerHTML = marked(markdown);
 };
 

@@ -118,8 +118,12 @@ ipcMain.on('open-file', (event, path) => {
     if (results.canceled) {
       event.reply('file-opened', '');
     } else {
+      let content = {
+        path: results.filePaths[0],
+        text: fs.readFileSync(results.filePaths[0]).toString()
+      };
       //otherwise return the text for the markdown
-    event.reply('file-opened', fs.readFileSync(results.filePaths[0]).toString());
+    event.reply('file-opened', content);
     }
   })
   .catch(err => console.log(err));
