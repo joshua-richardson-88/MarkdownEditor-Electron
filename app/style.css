@@ -1,0 +1,107 @@
+/* Sets the width and height correctly */
+html {
+  box-sizing: border-box;
+}
+
+/* Passes the html property down to all elements */
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+}
+
+/* Use the OS default font in application */
+body,
+input {
+  font: menu;
+}
+
+/* Remove the browser default highlighting around active inputs */
+textarea,
+input,
+div,
+button {
+  outline: none;
+  margin: 0;
+}
+
+/* Styling the scrollbar */
+textarea,
+div {
+  scrollbar-width: thin;
+  scrollbar-color: #333 rgba(0, 0, 0, 0);
+}
+
+textarea::-webkit-scrollbar,
+div::-webkit-scrollbar {
+  width: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb,
+div::-webkit-scrollbar-thumb {
+  background-color: #333;
+  border-radius: 6px;
+}
+
+.controls {
+  background-color: rgb(217, 241, 238);
+  padding: 10px;
+}
+
+button {
+  font-size: 14px;
+  background-color: rgb(181, 220, 216);
+  border: none;
+  padding: 0.5em 1em;
+}
+
+button:hover {
+  background-color: rgb(156, 198, 192);
+}
+
+button:active {
+  background-color: rgb(144, 182, 177);
+}
+
+button:disabled {
+  background-color: rgb(196, 204, 202);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 100vw;
+  position: relative;
+}
+
+.content {
+  height: calc(100vh - 50px);
+  display: flex;
+}
+
+.raw-markdown,
+.rendered-html {
+  width: 50vw;
+  flex-grow: 1;
+  padding: 1em;
+  overflow: scroll;
+  font-size: 16px;
+}
+
+.raw-markdown {
+  border: 1px solid rgb(238, 252, 250);
+  background-color: rgb(238, 252, 250);
+}
