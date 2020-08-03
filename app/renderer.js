@@ -39,3 +39,8 @@ markdownView.addEventListener("keyup", (event) => {
 openFileButton.addEventListener("click", () => {
   mainProcess.getFileFromUser(currentWindow);
 });
+
+// New File Action
+newFileButton.addEventListener("click", () => {
+  mainProcess.createWindow();
+});
