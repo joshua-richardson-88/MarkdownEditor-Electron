@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const fs = require("fs");
 
 // Add a set to track all of the windows
@@ -69,7 +69,7 @@ const createWindow = (exports.createWindow = () => {
 // Wrapper function for dialog.showOpenDialog
 // We assign getFilesFrom user to the exports object to be used in renderer process
 // We pass a reference to the window requesting the file
-const getFileFromUser = (exports.getFileFromUser = (targetWindow) => {
+const getFileFromUser = (targetWindow) => {
   // Triggers the OS's Open File dialog box, passing in config arguments
   // Passing in mainWindow allows macOS to display the dialog box as a
   // sheet coming down from the title bar of the window. No effect in
@@ -83,13 +83,21 @@ const getFileFromUser = (exports.getFileFromUser = (targetWindow) => {
   });
 
   // pass the reference to the requesting window, and the file
+  console.log(files);
   if (files) openFile(targetWindow, files[0]);
-});
+};
 
-const openFile = (exports.openFile = (targetWindow, file) => {
+const openFile = (targetWindow, file) => {
   const content = fs.readFileSync(file).toString();
 
   // We send the name of the file and its content to the renderer
   // process over the "file-opened" channel of the requesting window
   targetWindow.webContents.send("file-opened", file, content);
-});
+};
+
+
+// ipcMain functionality
+// Receiving
+ipcMain.on('send-open-flie', (event, targetWindow) => {
+  getFileFromUser(targetWindow);
+})

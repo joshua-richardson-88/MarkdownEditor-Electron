@@ -37,7 +37,7 @@ markdownView.addEventListener("keyup", (event) => {
 
 // Open File Action
 openFileButton.addEventListener("click", () => {
-  mainProcess.getFileFromUser(currentWindow);
+  ipcRenderer.send('send-open-file', currentWindow);
 });
 
 // New File Action
