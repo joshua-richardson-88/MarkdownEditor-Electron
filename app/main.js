@@ -25,7 +25,7 @@ const createWindow = (exports.createWindow = () => {
 
   // Shows the window when the DOM is loaded
   newWindow.once("ready-to-show", () => {
-    mainWindow.show();
+    newWindow.show();
   });
 
   // Remove the reference from the windows set when we close the browser window
