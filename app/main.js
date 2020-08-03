@@ -35,7 +35,6 @@ const createWindow = (exports.createWindow = () => {
     y = currentWindowY + 25;
   }
 
-  // Decalres mainWindow at the top level so that it won't be collected as garbage after the "ready" event completes
   let newWindow = new BrowserWindow({
     x, // set the position of the window
     y,
@@ -69,12 +68,15 @@ const createWindow = (exports.createWindow = () => {
 // Wrapper function for dialog.showOpenDialog
 // We assign getFilesFrom user to the exports object to be used in renderer process
 // We pass a reference to the window requesting the file
-const getFileFromUser = (targetWindow) => {
+const getFileForUser = (targetWindow) => {
   // Triggers the OS's Open File dialog box, passing in config arguments
   // Passing in mainWindow allows macOS to display the dialog box as a
   // sheet coming down from the title bar of the window. No effect in
   // Windows or Linux
   const files = dialog.showOpenDialog(targetWindow, {
+    title: "Choose a markdown file to open",
+    defaultPath: "C:\\",
+    buttonLabel: "Choose File",
     properties: ["openFile"],
     filters: [
       { name: "Text Files", extensions: ["txt"] },
@@ -87,17 +89,38 @@ const getFileFromUser = (targetWindow) => {
   if (files) openFile(targetWindow, files[0]);
 };
 
-const openFile = (targetWindow, file) => {
+const openFile = exports.openFile = (targetWindow, file) => {
   const content = fs.readFileSync(file).toString();
 
   // We send the name of the file and its content to the renderer
   // process over the "file-opened" channel of the requesting window
-  targetWindow.webContents.send("file-opened", file, content);
+  targetWindow.send("file-opened", file, content);
 };
 
 
 // ipcMain functionality
 // Receiving
-ipcMain.on('send-open-flie', (event, targetWindow) => {
-  getFileFromUser(targetWindow);
-})
+ipcMain.on('open-file', (event, path) => {
+  // showOpenDialog returns a promise - pass in the window for macOS sheets displaying
+  // pass in parameters
+  dialog.showOpenDialog(event.sender, {
+    title: "Choose a markdown file to open",
+    defaultPath: "C:\\Users\\jrichardson\\Documents\\Programming\\Full Stack\\Electron in Motion",
+    buttonLabel: "Choose File",
+    properties: ["openFile"],
+    filters: [
+      { name: "Text Files", extensions: ["txt"] },
+      { name: "Markdown Files", extensions: ["md", "markdown"] },
+    ],
+  })
+  .then(results => {
+    // if the user cancelled the window, return nothing
+    if (results.canceled) {
+      event.reply('file-opened', '');
+    } else {
+      //otherwise return the text for the markdown
+    event.reply('file-opened', fs.readFileSync(results.filePaths[0]).toString());
+    }
+  })
+  .catch(err => console.log(err));
+});

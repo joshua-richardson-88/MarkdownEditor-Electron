@@ -1,8 +1,11 @@
-const { remote, ipcRenderer } = require("electron");
-const mainProcess = remote.require("./main.js");
-const currentWindow = remote.getCurrentWindow();
+const electron = require("electron");
+const fs = require('fs');
+
+const dialog = electron.remote.dialog;
+const mainProcess = electron.remote.require('./main.js')
 
 const marked = require("marked");
+const { ipcRenderer } = require("electron");
 
 const markdownView = document.querySelector("#markdown");
 const htmlView = document.querySelector("#html");
@@ -14,19 +17,16 @@ const saveHtmlButton = document.querySelector("#save-html");
 const showFileButton = document.querySelector("#show-file");
 const openInDefaultButton = document.querySelector("#open-in-default");
 
-// ipcRenderer channels
-// Sending
-
+// ipcRenderer
 // Receiving
-// When a file is opened, render the file as markdown
-ipcRenderer.on("file-opened", (event, file, content) => {
-  markdownView.value = content;
-  renderMarkdownToHtml(content);
+ipcRenderer.on('file-opened', (event, content) => {
+  if (content.length > 0) renderMarkdownToHtml(content);
 });
 
 // helper function wrapping the marked module
 const renderMarkdownToHtml = (markdown) => {
-  htmlView.innerHTML = marked(markdown, { sanitize: true });
+  markdownView.innerHTML = markdown;
+  htmlView.innerHTML = marked(markdown);
 };
 
 // Pass the plain-text to the rendered markdown div
@@ -37,7 +37,7 @@ markdownView.addEventListener("keyup", (event) => {
 
 // Open File Action
 openFileButton.addEventListener("click", () => {
-  ipcRenderer.send('send-open-file', currentWindow);
+  ipcRenderer.send('open-file');
 });
 
 // New File Action
