@@ -1,7 +1,8 @@
 const electron = require("electron");
 const path = require('path');
 
-const mainProcess = electron.remote.require('./main.js')
+const mainProcess = electron.remote.require('./main.js');
+const currentWindow = electron.remote.getCurrentWindow();
 
 const marked = require("marked");
 const { ipcRenderer } = require("electron");
@@ -29,6 +30,9 @@ ipcRenderer.on('file-opened', (event, content) => {
   if (content.text.length > 0) {
     originalContent = content.text;
     renderMarkdownToHtml(content.text);
+
+    // When we open for the first time, the file has not been edited yet
+    updateUserInterface(false);
   }
 });
 
@@ -38,10 +42,27 @@ const renderMarkdownToHtml = (markdown) => {
   htmlView.innerHTML = marked(markdown);
 };
 
+// helper function to update the title bar
+const updateUserInterface = (isEdited) => {
+  let title = 'Markdown Editor';
+  if (currentFilePath) title = `${path.basename(currentFilePath)} - ${title}`;
+  if (isEdited) title = `${title} (Edited)`
+  
+  // Set the window properties
+  currentWindow.setTitle(title);
+  currentWindow.setDocumentEdited(isEdited);
+
+  // Enable buttons based on whether we are in an edited file
+  saveMarkdownButton.disabled = !isEdited;
+  revertButton.disabled = !isEdited;
+}
+
 // Pass the plain-text to the rendered markdown div
 markdownView.addEventListener("keyup", (event) => {
   const currentContent = event.target.value;
+  
   renderMarkdownToHtml(currentContent);
+  updateUserInterface(currentContent !== originalContent);
 });
 
 // Open File Action
