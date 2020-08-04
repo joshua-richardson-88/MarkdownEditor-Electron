@@ -128,3 +128,7 @@ revertButton.addEventListener('click', () => {
   markdownView.value = originalContent;
   renderMarkdownToHtml(originalContent);
 });
+
+document.addEventListener('dragenter', (event) => {
+  console.log(event.dataTransfer);
+})

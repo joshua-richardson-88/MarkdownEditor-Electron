@@ -1,4 +1,5 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
+const path = require('path');
 const fs = require("fs");
 
 // Add a set to track all of the windows
@@ -51,8 +52,12 @@ const createWindow = (exports.createWindow = () => {
     // hide the window when it's first created
     show: false,
     // allow us to use require in HTML
+    // set up for security
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false, // default, but good to ensure
+      contextIsolation: true, // protect against prototype pollution attacks
+      enableRemoteModule: false, // don't allow remote 
+      preload: path.join(__dir, "renderBridge.js") // use a preloaded script
     },
   });
 
