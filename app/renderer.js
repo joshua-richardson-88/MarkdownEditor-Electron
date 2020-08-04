@@ -44,6 +44,7 @@ const renderMarkdownToHtml = (markdown) => {
 
 // helper function to update the title bar
 const updateUserInterface = (isEdited) => {
+  console.log('edited: ' + isEdited);
   let title = 'Markdown Editor';
   if (currentFilePath) title = `${path.basename(currentFilePath)} - ${title}`;
   if (isEdited) title = `${title} (Edited)`
@@ -58,8 +59,11 @@ const updateUserInterface = (isEdited) => {
 }
 
 // Pass the plain-text to the rendered markdown div
-markdownView.addEventListener("keyup", (event) => {
+markdownView.addEventListener("input", (event) => {
   const currentContent = event.target.value;
+
+  console.log(currentContent);
+  console.log(originalContent);
   
   renderMarkdownToHtml(currentContent);
   updateUserInterface(currentContent !== originalContent);
