@@ -81,3 +81,27 @@ openFileButton.addEventListener("click", () => {
 newFileButton.addEventListener("click", () => {
   mainProcess.createWindow();
 });
+
+// Export the file as HTML Action
+saveHtmlButton.addEventListener('click', () => {
+  let page = `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+      <title>${currentFilePath}</title>
+    </head>
+    <body>
+      ${htmlView.innerHTML}
+    </body>
+  </html>  
+  `;
+  ipcRenderer.send('export-html', page);
+})
+
+// Save the file
+saveMarkdownButton.addEventListener('click', () => {
+  ipcRenderer.send('save-file', currentFilePath, markdownView.value);
+})

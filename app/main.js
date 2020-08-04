@@ -8,6 +8,16 @@ app.on("ready", () => {
   createWindow();
 });
 
+// Listen for open-file events, which provide the path of the externally opened file and then passes that file path to our openFile function
+app.on('will-finish-launching', () => {
+  app.on('open-file', (event, file) => {
+    const win = createWindow();
+    win.once('ready-to-show', () => {
+      win.webContents.send('file-opened', packageFile(file));
+    })
+  })
+})
+
 // Create a window when application is open and there are no windows
 // Also for macOS
 app.on("activate", (event, hasVisibleWindows) => {
@@ -65,8 +75,19 @@ const createWindow = (exports.createWindow = () => {
   return newWindow;
 });
 
+// A function to generate the opened file content
+const packageFile = (filePath) => {
+  app.addRecentDocument(filePath);
+  let content = {
+    path: filePath,
+    text: fs.readFileSync(filePath).toString()
+  };
+  return content;
+}
+
 // ipcMain functionality
 // Receiving
+// Open a file 
 ipcMain.on('open-file', (event, path) => {
   dialog.showOpenDialog(event.sender, {
     title: "Choose a markdown file to open",
@@ -84,13 +105,45 @@ ipcMain.on('open-file', (event, path) => {
       event.reply('file-opened', "");
     } else {
       //otherwise return the contents of the file, and set the file in the OS recently viewed section
-      app.addRecentDocument(results.filePaths[0]);
-      let content = {
-        path: results.filePaths[0],
-        text: fs.readFileSync(results.filePaths[0]).toString()
-      };
-      event.reply('file-opened', content);
+      event.reply('file-opened', packageFile(results.filePaths[0]));
     }
   })
   .catch(err => console.log(err));;
 });
+
+// Export the file as HTML
+ipcMain.on('export-html', (event, content) => {
+  dialog.showSaveDialog(event.sender, {
+    title: 'Save HTML',
+    defaultPath: app.getPath('documents'),
+    buttonLabel: 'Save file',
+    filters: [
+      { name: 'HTML Files', extensions: ['html', 'htm'] }
+    ]
+  }).then (results => {
+    if (results.filePath) {
+      fs.writeFileSync(results.filePath, content);
+    }
+  }).catch(err => console.log(err));
+});
+
+ipcMain.on('save-file', (event, path, content) => {
+  // if this is a new file, bring up the save file dialog for the user to choose
+  if (!path) {
+    dialog.showSaveDialog(event.sender, {
+      title: 'Save Markdown',
+      defaultPath: app.getPath('documents'),
+      filters: [
+        { name: 'Markdown Files', extensions: ['md', 'markdown'] }
+      ]
+    }).then( results => {
+      if (results.filePath) {
+        fs.writeFileSync(results.filePath, content);
+        app.addRecentDocument(results.filePath);
+      }
+    })
+  } else {
+    //otherwise, save the file
+    fs.writeFileSync(path, content);
+  }
+})
