@@ -120,6 +120,7 @@ saveHtmlButton.addEventListener('click', () => {
 saveMarkdownButton.addEventListener('click', () => {
   // send the content to the main process for saving
   ipcRenderer.send('save-file', currentFilePath, markdownView.value);
+  originalContent = markdownView.value;
 })
 
 // Revert to previous state action
