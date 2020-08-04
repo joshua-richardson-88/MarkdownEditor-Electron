@@ -65,44 +65,9 @@ const createWindow = (exports.createWindow = () => {
   return newWindow;
 });
 
-// Wrapper function for dialog.showOpenDialog
-// We assign getFilesFrom user to the exports object to be used in renderer process
-// We pass a reference to the window requesting the file
-const getFileForUser = (targetWindow) => {
-  // Triggers the OS's Open File dialog box, passing in config arguments
-  // Passing in mainWindow allows macOS to display the dialog box as a
-  // sheet coming down from the title bar of the window. No effect in
-  // Windows or Linux
-  const files = dialog.showOpenDialog(targetWindow, {
-    title: "Choose a markdown file to open",
-    defaultPath: "C:\\",
-    buttonLabel: "Choose File",
-    properties: ["openFile"],
-    filters: [
-      { name: "Text Files", extensions: ["txt"] },
-      { name: "Markdown Files", extensions: ["md", "markdown"] },
-    ],
-  });
-
-  // pass the reference to the requesting window, and the file
-  console.log(files);
-  if (files) openFile(targetWindow, files[0]);
-};
-
-const openFile = exports.openFile = (targetWindow, file) => {
-  const content = fs.readFileSync(file).toString();
-
-  // We send the name of the file and its content to the renderer
-  // process over the "file-opened" channel of the requesting window
-  targetWindow.send("file-opened", file, content);
-};
-
-
 // ipcMain functionality
 // Receiving
 ipcMain.on('open-file', (event, path) => {
-  // showOpenDialog returns a promise - pass in the window for macOS sheets displaying
-  // pass in parameters
   dialog.showOpenDialog(event.sender, {
     title: "Choose a markdown file to open",
     defaultPath: "C:\\Users\\jrichardson\\Documents\\Programming\\Full Stack\\Electron in Motion",
@@ -116,15 +81,16 @@ ipcMain.on('open-file', (event, path) => {
   .then(results => {
     // if the user cancelled the window, return nothing
     if (results.canceled) {
-      event.reply('file-opened', '');
+      event.reply('file-opened', "");
     } else {
+      //otherwise return the contents of the file, and set the file in the OS recently viewed section
+      app.addRecentDocument(results.filePaths[0]);
       let content = {
         path: results.filePaths[0],
         text: fs.readFileSync(results.filePaths[0]).toString()
       };
-      //otherwise return the text for the markdown
-    event.reply('file-opened', content);
+      event.reply('file-opened', content);
     }
   })
-  .catch(err => console.log(err));
+  .catch(err => console.log(err));;
 });

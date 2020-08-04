@@ -26,7 +26,10 @@ let originalContent = '';
 // When we receive a file to open
 ipcRenderer.on('file-opened', (event, content) => {
   //if the filePath is given
-  if (content.path.length > 0) currentFilePath = content.path;
+  if (content.path.length > 0) {
+    currentFilePath = content.path;
+    currentWindow.setRepresentedFilename(content.path);
+  }
   if (content.text.length > 0) {
     originalContent = content.text;
     renderMarkdownToHtml(content.text);
