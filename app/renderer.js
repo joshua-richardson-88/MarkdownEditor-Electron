@@ -16,6 +16,7 @@ const revertButton = document.querySelector("#revert");
 const saveHtmlButton = document.querySelector("#save-html");
 const showFileButton = document.querySelector("#show-file");
 const openInDefaultButton = document.querySelector("#open-in-default");
+const toast = document.querySelector('#toast');
 
 // Global variables for tracking current file
 let currentFilePath = null;
@@ -38,6 +39,20 @@ ipcRenderer.on('file-opened', (event, content) => {
     updateUserInterface(false);
   }
 });
+
+// After a file has been saved
+ipcRenderer.on('file-saved', (event, message) => {
+  // sets the message for the toast
+  toast.innerHTML = `<span>${message.text}</span>`;
+  // assigns the color scheme, and makes the toast visible
+  toast.classList.toggle(message.status);
+  toast.classList.toggle('hide');
+  // after 2 seconds, hide the toast and remove any styling
+  setTimeout(() => { 
+    toast.classList.toggle('hide');
+    toast.remove('success', 'error');
+  }, 2000);
+})
 
 // helper function wrapping the marked module
 const renderMarkdownToHtml = (markdown) => {
@@ -103,5 +118,6 @@ saveHtmlButton.addEventListener('click', () => {
 
 // Save the file
 saveMarkdownButton.addEventListener('click', () => {
+  // send the content to the main process for saving
   ipcRenderer.send('save-file', currentFilePath, markdownView.value);
 })

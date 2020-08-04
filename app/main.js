@@ -141,9 +141,11 @@ ipcMain.on('save-file', (event, path, content) => {
         fs.writeFileSync(results.filePath, content);
         app.addRecentDocument(results.filePath);
       }
-    })
+      event.reply('file-saved', { text: 'File Saved Successfully', status: 'success' });
+    }).catch(err => event.reply('file-saved', {text: `File not saved successfully. ${err.message}`, status: 'error'}))
   } else {
     //otherwise, save the file
     fs.writeFileSync(path, content);
+    event.reply('file-saved', { text: 'File Saved Successfully', status: 'success' });
   }
 })

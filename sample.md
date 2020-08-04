@@ -8,3 +8,7 @@ Lorem ipsum dolor, sit amet consectetur adipisicing elit. Exercitationem obcaeca
   - Item 2b
 - Item 3
 - Item 4
+
+# New Beginnings
+
+There will be blood in the water.

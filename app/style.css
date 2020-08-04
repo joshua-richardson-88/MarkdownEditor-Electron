@@ -105,3 +105,31 @@ button:disabled {
   border: 1px solid rgb(238, 252, 250);
   background-color: rgb(238, 252, 250);
 }
+
+.hide {
+  display: none;
+}
+
+.toast {
+  z-index: 10;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 5px 5px 10px black;
+}
+
+.success {
+  border: 3px solid rgb(83, 161, 150);
+  background-color: white;
+  font-size: medium;
+  color: rgb(83, 161, 150);
+}
+
+.error {
+  border: 3px solid rgb(209, 102, 102);
+  background-color: white;
+  font-size: medium;
+  color: rgb(209, 102, 102);
+}
