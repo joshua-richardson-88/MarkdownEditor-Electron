@@ -11,21 +11,26 @@ const toast = document.querySelector('#toast');
 
 // global variables for tracking current file
 let currentFilePath = null;
+let loadedTitle = null;
 let originalContent = '';
+let scrolled = false;
 
 // Get from main process
 window.api.receive('file-opened', (content) => {
   // if the filepath is given
   if (content.path.length > 0) {
     currentFilePath = content.path;
-    currentWindow.setRepresentedFilename(content.path);
+    loadedTitle = currentFilePath.split('\\').pop();
+    document.title = `${loadedTitle}`;
   }
   if (content.text.length > 0) {
     originalContent = content.text;
     renderMarkdownToHtml(content.text);
 
-    // When we open for the first time, the file has not been edited yet
+    // When we open for the first time, the file has 
+    // not been edited yet
     updateUserInterface(false);
+    updateScroll();
   }
 });
 
@@ -36,8 +41,12 @@ window.api.receive('file-saved', (message) => {
   // assigns the color scheme, and makes the toast visible
   toast.classList.toggle(message.status);
   toast.classList.toggle('hide');
+
+  // reset the (edited) portion of the title, as we have now saved the file
+  document.title = loadedTitle;
+
   // after 2 seconds, hide the toast and remove any styling
-  setTimeout(() => { 
+  setTimeout(() => {
     toast.classList.toggle('hide');
     toast.remove('success', 'error');
   }, 2000);
@@ -46,5 +55,88 @@ window.api.receive('file-saved', (message) => {
 // helper function wrapping the marked module
 const renderMarkdownToHtml = (markdown) => {
   markdownView.value = markdown;
-  htmlView.innerHTML = marked(markdown);
+  htmlView.innerHTML = window.api.marked(markdown);
 };
+
+// helper function to update the title bar
+const updateUserInterface = (isEdited) => {
+  console.log('edited: ' + isEdited);
+  let newTitle = (isEdited) ? `${loadedTitle} (Edited)` : loadedTitle;
+
+  // Set the window properties
+  document.title = newTitle;
+
+  // Enable buttons based on whether we are in an edited file
+  saveMarkdownButton.disabled = !isEdited;
+  revertButton.disabled = !isEdited;
+}
+
+// helper function to cause a scroll event
+const updateScroll = () => {
+  if (!scrolled) {
+    markdownView.scrollTop = markdownView.scrollHeight;
+    htmlView.scrollTop = htmlView.scrollHeight;
+  }
+
+}
+
+// Pass the plain-text to the rendered markdown div
+markdownView.addEventListener("input", (event) => {
+  const currentContent = event.target.value;
+
+  // reset the scrolled value when we start typing to focus it there
+  scrolled = false;
+  //keep the view focused on what you're typing
+  updateScroll();
+
+  renderMarkdownToHtml(currentContent);
+  updateUserInterface(currentContent != originalContent);
+});
+
+// when the markdown view has been scrolled, prevent it from scolling back
+markdownView.addEventListener('scroll', () => {
+  scrolled = true;
+})
+
+// Open File Action
+openFileButton.addEventListener("click", () => {
+  window.api.send('open-file');
+});
+
+// New File Action
+newFileButton.addEventListener("click", () => {
+  window.api.send('create-window');
+});
+
+// Export the file as HTML Action
+saveHtmlButton.addEventListener('click', () => {
+  let page = `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+      <title>${currentFilePath}</title>
+    </head>
+    <body>
+      ${htmlView.innerHTML}
+    </body>
+  </html>  
+  `;
+  window.api.send('export-html', page);
+});
+
+// Save the file
+saveMarkdownButton.addEventListener('click', () => {
+  // send the content to the main process for saving
+  window.api.send('save-file', { path: currentFilePath, text: markdownView.value });
+  originalContent = markdownView.value;
+});
+
+// Revert to previous state action
+revertButton.addEventListener('click', () => {
+  markdownView.value = originalContent;
+  renderMarkdownToHtml(originalContent);
+  document.title = loadedTitle;
+});

@@ -9,7 +9,8 @@ app.on("ready", () => {
   createWindow();
 });
 
-// Listen for open-file events, which provide the path of the externally opened file and then passes that file path to our openFile function
+// Listen for open-file events, which provide the path of the externally
+// opened file and then passes that file path to our openFile function
 app.on('will-finish-launching', () => {
   app.on('open-file', (event, file) => {
     const win = createWindow();
@@ -57,7 +58,7 @@ const createWindow = (exports.createWindow = () => {
       nodeIntegration: false, // default, but good to ensure
       contextIsolation: true, // protect against prototype pollution attacks
       enableRemoteModule: false, // don't allow remote 
-      preload: path.join(__dir, "renderBridge.js") // use a preloaded script
+      preload: path.join(__dirname, "renderBridge.js") // use a preloaded script
     },
   });
 
@@ -104,16 +105,16 @@ ipcMain.on('open-file', (event, path) => {
       { name: "Markdown Files", extensions: ["md", "markdown"] },
     ],
   })
-  .then(results => {
-    // if the user cancelled the window, return nothing
-    if (results.canceled) {
-      event.reply('file-opened', "");
-    } else {
-      //otherwise return the contents of the file, and set the file in the OS recently viewed section
-      event.reply('file-opened', packageFile(results.filePaths[0]));
-    }
-  })
-  .catch(err => console.log(err));;
+    .then(results => {
+      // if the user cancelled the window, return nothing
+      if (results.canceled) {
+        event.reply('file-opened', "");
+      } else {
+        //otherwise return the contents of the file, and set the file in the OS recently viewed section
+        event.reply('file-opened', packageFile(results.filePaths[0]));
+      }
+    })
+    .catch(err => console.log(err));;
 });
 
 // Export the file as HTML
@@ -125,32 +126,38 @@ ipcMain.on('export-html', (event, content) => {
     filters: [
       { name: 'HTML Files', extensions: ['html', 'htm'] }
     ]
-  }).then (results => {
+  }).then(results => {
     if (results.filePath) {
       fs.writeFileSync(results.filePath, content);
     }
   }).catch(err => console.log(err));
 });
 
-ipcMain.on('save-file', (event, path, content) => {
+// Save the markdown to the file path
+ipcMain.on('save-file', (event, content) => {
   // if this is a new file, bring up the save file dialog for the user to choose
-  if (!path) {
+  if (!content.path) {
     dialog.showSaveDialog(event.sender, {
       title: 'Save Markdown',
       defaultPath: app.getPath('documents'),
       filters: [
         { name: 'Markdown Files', extensions: ['md', 'markdown'] }
       ]
-    }).then( results => {
+    }).then(results => {
       if (results.filePath) {
-        fs.writeFileSync(results.filePath, content);
+        fs.writeFileSync(results.filePath, content.text);
         app.addRecentDocument(results.filePath);
       }
       event.reply('file-saved', { text: 'File Saved Successfully', status: 'success' });
-    }).catch(err => event.reply('file-saved', {text: `File not saved successfully. ${err.message}`, status: 'error'}))
+    }).catch(err => event.reply('file-saved', { text: `File not saved successfully. ${err.message}`, status: 'error' }))
   } else {
     //otherwise, save the file
-    fs.writeFileSync(path, content);
+    fs.writeFileSync(content.path, content.text);
     event.reply('file-saved', { text: 'File Saved Successfully', status: 'success' });
   }
+});
+
+// Open a new application window
+ipcMain.on('create-window', (event, args) => {
+  createWindow();
 })

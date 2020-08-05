@@ -42,7 +42,11 @@ textarea,
 div {
   scrollbar-width: thin;
   scrollbar-color: #333 rgba(0, 0, 0, 0);
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y proximity;
 }
+
+div:last-child { scroll-snap-align: end; }
 
 textarea::-webkit-scrollbar,
 div::-webkit-scrollbar {

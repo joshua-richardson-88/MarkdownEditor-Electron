@@ -1,22 +1,27 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const marked = require('marked');
 
 // Expose protected methods that allow the renderer process to use 
 // the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld(
-  "api", {
-    send: (channel, data) => {
-      //whitelist these channels
-      let validChannels = ['toMain'];
-      if (validChannels.includes(channel)) {
-        ipcRenderer.send(channel, data);
-      }
-    },
-    receive: (channel, data) => {
-      let validChannels = ['fromMain'];
-      if (validChannels.includes(channel)) {
-        // Deliberately strip event as it includes 'sender'
-        ipcRenderer.on(channel, (event, ...args) => func(...args));
-      }
+contextBridge.exposeInMainWorld("api", {
+  // this sends FROM render-side
+  send: (channel, data) => {
+    //whitelist these channels
+    let validChannels = ['open-file', 'create-window', 'export-html', 'save-file'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
     }
+  },
+  // this returns TO render-side
+  receive: (channel, func) => {
+    let validChannels = ['file-opened', 'file-saved', ''];
+    if (validChannels.includes(channel)) {
+      // Deliberately strip event as it includes 'sender'
+      ipcRenderer.on(channel, (event, ...args) => func(...args));
+    }
+  },
+  // this processes markdown requests
+  marked: (text) => {
+    return marked(text);
   }
-)
+})

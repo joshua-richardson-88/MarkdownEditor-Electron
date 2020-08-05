@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" type="text/css" href="style.css" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Markdown Editor</title>
-  </head>
-  <body>
-    <div id="toast" class="toast hide"></div>
-      
-    <section class="controls">
-      <button id="new-file">New File</button>
-      <button id="open-file">Open File</button>
-      <button id="save-markdown">Save File</button>
-      <button id="revert" disabled>Revert</button>
-      <button id="save-html">Save HTML</button>
-      <button id="show-file" disabled>Show File</button>
-      <button id="open-in-default" disabled>Open in Default Application</button>
-    </section>
+  <link rel="stylesheet" type="text/css" href="style.css" />
 
-    <section class="content">
-      <label for="markdown" hidden>Markdown Content</label>
-      <textarea id="markdown" class="raw-markdown"></textarea>
-      <div class="rendered-html" id="html"></div>
-    </section>
+  <title>Markdown Editor</title>
+</head>
 
-    <script src="renderer.js"></script>
-  </body>
+<body>
+  <div id="toast" class="toast hide"></div>
+
+  <section class="controls">
+    <button id="new-file">New File</button>
+    <button id="open-file">Open File</button>
+    <button id="save-markdown">Save File</button>
+    <button id="revert" disabled>Revert</button>
+    <button id="save-html">Save HTML</button>
+    <button id="show-file" disabled>Show File</button>
+    <button id="open-in-default" disabled>Open in Default Application</button>
+  </section>
+
+  <section class="content">
+    <label for="markdown" hidden>Markdown Content</label>
+    <textarea id="markdown" class="raw-markdown"></textarea>
+    <div class="rendered-html" id="html"></div>
+  </section>
+
+  <script src="render.js"></script>
+</body>
+
 </html>
