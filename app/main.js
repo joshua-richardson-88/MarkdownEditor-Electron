@@ -5,6 +5,9 @@ const fs = require("fs");
 // Add a set to track all of the windows
 const windows = new Set();
 
+// Add a map of all the files we're watching
+const openFiles = new Map();
+
 app.on("ready", () => {
   createWindow();
 });
@@ -73,6 +76,7 @@ const createWindow = (exports.createWindow = () => {
   // Remove the reference from the windows set when we close the browser window
   newWindow.on("closed", () => {
     windows.delete(newWindow);
+    stopWatchingFile(newWindow);
     newWindow = null;
   });
 
@@ -89,6 +93,30 @@ const packageFile = (filePath) => {
     text: fs.readFileSync(filePath).toString()
   };
   return content;
+}
+
+// A function to watch for changes in open files
+const startWatchingFiles = (targetWindow, filePath) => {
+  // Closes the existing watcher if there is one
+  stopWatchingFile(targetWindow);
+
+  // create a watcher object, and if it fires a "change" event, send the changes back
+  const watcher = fs.watchFile(filePath, (event) => {
+    targetWindow.reply('file-opened', packageFile(filePath));
+  });
+
+  // Track the watcher so we can stop it later.
+  openFiles.set(targetWindow, watcher);
+}
+
+const stopWatchingFile = (targetWindow) => {
+  // Check if we have a watcher running for this window
+  if (openFiles.has(targetWindow)) {
+    // Stop the watcher object from listening for changes
+    openFiles.get(targetWindow).stop();
+    // Delete the watcher from our list of watchers
+    openFiles.delete(targetWindow);
+  }
 }
 
 // ipcMain functionality
@@ -110,6 +138,9 @@ ipcMain.on('open-file', (event, path) => {
       if (results.canceled) {
         event.reply('file-opened', "");
       } else {
+        // start watching for external changes on the file
+        startWatchingFiles(event, results.filePaths[0]);
+
         //otherwise return the contents of the file, and set the file in the OS recently viewed section
         event.reply('file-opened', packageFile(results.filePaths[0]));
       }
@@ -160,4 +191,4 @@ ipcMain.on('save-file', (event, content) => {
 // Open a new application window
 ipcMain.on('create-window', (event, args) => {
   createWindow();
-})
+});
