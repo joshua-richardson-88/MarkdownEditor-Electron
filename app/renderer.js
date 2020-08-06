@@ -65,6 +65,7 @@ const updateUserInterface = (isEdited) => {
 
   // Set the window properties
   document.title = newTitle;
+  window.api.send('set-edited', isEdited);
 
   // Enable buttons based on whether we are in an edited file
   saveMarkdownButton.disabled = !isEdited;
@@ -90,7 +91,7 @@ markdownView.addEventListener("input", (event) => {
   updateScroll();
 
   renderMarkdownToHtml(currentContent);
-  updateUserInterface(currentContent != originalContent);
+  updateUserInterface(currentContent !== originalContent);
 });
 
 // when the markdown view has been scrolled, prevent it from scolling back

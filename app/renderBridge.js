@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld("api", {
   // this sends FROM render-side
   send: (channel, data) => {
     //whitelist these channels
-    let validChannels = ['open-file', 'create-window', 'export-html', 'save-file'];
+    let validChannels = ['set-edited', 'open-file', 'create-window', 'export-html', 'save-file'];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     }
