@@ -8,6 +8,9 @@ const windows = new Set();
 // Add a map of all the files we're watching
 const openFiles = new Map();
 
+// Supported File Types
+const fileTypes = ['md', 'markdown', 'txt'];
+
 
 app.on("ready", () => {
   createWindow();
@@ -179,27 +182,11 @@ const getWindowEdited = (windowToFind) => {
   }
 }
 
-const openFile = async (event, path) => {
-  dialog.showOpenDialog(event.sender, {
-    title: "Choose a markdown file to open",
-    defaultPath: "C:\\Users\\jrichardson\\Documents\\Programming\\Full Stack\\Electron in Motion",
-    buttonLabel: "Choose File",
-    properties: ["openFile"],
-    filters: [
-      { name: "Text Files", extensions: ["txt"] },
-      { name: "Markdown Files", extensions: ["md", "markdown"] },
-    ],
-  }).then(result => return result)
-}
-
 // ipcMain functionality
 // Receiving
 // Open a file 
 ipcMain.on('open-file', (event, path) => {
-  let file = await openFile(event);
-  console.log(file);
-
-  /*dialog.showOpenDialog(event.sender, {
+  dialog.showOpenDialog(event.sender, {
     title: "Choose a markdown file to open",
     defaultPath: "C:\\Users\\jrichardson\\Documents\\Programming\\Full Stack\\Electron in Motion",
     buttonLabel: "Choose File",
@@ -214,16 +201,22 @@ ipcMain.on('open-file', (event, path) => {
       if (results.canceled) {
         event.reply('file-opened', "");
       } else {
+        //check if the file has a valid file type
+        let ext = results.filePaths[0].split('\\').pop().split('.')[1];
 
-        // start watching for external changes on the file
-        startWatchingFiles(event, results.filePaths[0]);
+        console.log(ext);
+        if (fileTypes.includes(ext)) {
+          // start watching for external changes on the file
+          startWatchingFiles(event, results.filePaths[0]);
 
-        //otherwise return the contents of the file, and set the file in the OS recently viewed section
-        event.reply('file-opened', packageFile(results.filePaths[0]));
+          //otherwise return the contents of the file, and set the file in the OS recently viewed section
+          event.reply('file-opened', packageFile(results.filePaths[0]));
+        } else {
+          dialog.showErrorBox('Invalid File Type', 'This application only supports .md, .markdown, or .txt files');
+        }
       }
     })
-    .catch(err => console.log(err));;
-  */
+    .catch(err => console.log(err));
 });
 
 // Export the file as HTML
