@@ -84,6 +84,7 @@ const createWindow = (exports.createWindow = () => {
 
     // figure out if this window has edits
     let edited = getWindowEdited(newWindow);
+    console.log(`this file was edited? ${edited}`);
 
     // if it has, then ...
     if (edited) {
@@ -162,21 +163,28 @@ const stopWatchingFile = (targetWindow) => {
   }
 }
 
-const setWindowEdited = (event, {key, value}) => {
+const setWindowEdited = (event, key, value) => {
   let currentWindow = BrowserWindow.fromWebContents(event.sender);
 
   for (const window of windows) {
+    console.log('finding window')
     if (currentWindow === window.window) {
+      console.log(`found window, searching for ${key}`)
       if (window.hasOwnProperty(key)) {
+        console.log(`found ${key}, setting value: ${value}`)
         window[key] = value;
       }
+      console.log(`the window is now ${window}`)
     }
   }
 }
 
 const getWindowEdited = (windowToFind) => {
+  console.log(`window edited called`);
   for (const window of windows) {
+    console.log(`finding window...`)
     if (windowToFind === window.window) {
+      console.log(`window found. isEdited property: ${window.isEdited}`)
       return window.isEdited
     }
   }
@@ -204,7 +212,6 @@ ipcMain.on('open-file', (event, path) => {
         //check if the file has a valid file type
         let ext = results.filePaths[0].split('\\').pop().split('.')[1];
 
-        console.log(ext);
         if (fileTypes.includes(ext)) {
           // start watching for external changes on the file
           startWatchingFiles(event, results.filePaths[0]);
@@ -270,5 +277,6 @@ ipcMain.on('create-window', (event, args) => {
 
 // Sets the BrowserWindow's edited property
 ipcMain.on('set-edited', (event, isEdited) => {
-  setWindowEdited(event, isEdited);
+  console.log('setting window to be edited...');
+  setWindowEdited(event, 'isEdited', isEdited);
 });
