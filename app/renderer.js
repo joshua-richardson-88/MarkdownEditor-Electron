@@ -52,6 +52,11 @@ window.api.receive('file-saved', (message) => {
   }, 2000);
 });
 
+// If we are closing the browser window (this is kind of hacky)
+window.api.receive('window-closed', () => {
+  window.api.send('close-window');
+});
+
 // helper function wrapping the marked module
 const renderMarkdownToHtml = (markdown) => {
   markdownView.value = markdown;
@@ -60,7 +65,6 @@ const renderMarkdownToHtml = (markdown) => {
 
 // helper function to update the title bar
 const updateUserInterface = (isEdited) => {
-  console.log('edited: ' + isEdited);
   let newTitle = (isEdited) ? `${loadedTitle} (Edited)` : loadedTitle;
 
   // Set the window properties
@@ -139,5 +143,6 @@ saveMarkdownButton.addEventListener('click', () => {
 revertButton.addEventListener('click', () => {
   markdownView.value = originalContent;
   renderMarkdownToHtml(originalContent);
+  updateUserInterface(false);
   document.title = loadedTitle;
 });

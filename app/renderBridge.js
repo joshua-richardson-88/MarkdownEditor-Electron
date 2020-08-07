@@ -7,14 +7,14 @@ contextBridge.exposeInMainWorld("api", {
   // this sends FROM render-side
   send: (channel, data) => {
     //whitelist these channels
-    let validChannels = ['set-edited', 'open-file', 'create-window', 'export-html', 'save-file'];
+    let validChannels = ['set-edited', 'open-file', 'create-window', 'export-html', 'save-file', 'close-window'];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     }
   },
   // this returns TO render-side
   receive: (channel, func) => {
-    let validChannels = ['file-opened', 'file-saved', ''];
+    let validChannels = ['file-opened', 'file-saved', 'window-closed'];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes 'sender'
       ipcRenderer.on(channel, (event, ...args) => func(...args));
