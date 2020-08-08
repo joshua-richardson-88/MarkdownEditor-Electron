@@ -67,7 +67,13 @@ const startWatchingFiles = (event, filePath) => {
 
   // create a watcher object, and if it fires a "change" event, send the changes back
   const watcher = fs.watchFile(filePath, (event) => {
-    currentWindow.webContents.send('file-opened', packageFile(filePath));
+    dialog.externalUnsaved(currentWindow)
+    .then(user => {
+      if (user.response === 0) {
+        currentWindow.webContents.send('file-opened', packageFile(filePath))
+      }
+    })
+    .catch(error => console.log(error));
   });
 
   // Track the watcher so we can stop it later.
@@ -119,7 +125,7 @@ ipcMain.on('open-file', (event, path) => {
   
   // if there is an open, edited file - warn the users
   if (edited) {
-    dialog.unsaved(currentWindow)
+    dialog.overwrite(currentWindow)
     .then(user => {
       // if the user chooses to continue, run the open file dialog
       if (user.response === 0) {
@@ -193,7 +199,7 @@ ipcMain.on('close-window', (event, args) => {
 
   // if there are unsaved changes, we need to let the user know
   if (edited) {
-    dialog.unsaved(windowToClose)
+    dialog.quitUnsaved(windowToClose)
     .then(user => {
       // if the user chooses to quit still, close the window
       if (user.response === 0) {

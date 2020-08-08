@@ -15,7 +15,7 @@ let loadedTitle = null;
 let originalContent = '';
 let scrolled = false;
 
-// Get from main process
+// When a file is newly opened
 window.api.receive('file-opened', (content) => {
   // if the filepath is given
   if (content.path.length > 0) {

@@ -61,11 +61,11 @@ const Dialog = () => {
     return dialog.showMessageBox(window, options);
   };
 
-  const unsavedChangesDialog = (window) => {
+  const quitWithUnsavedChangesDialog = (window) => {
     let options = {
       type: 'warning',
-      title: 'Wait!',
-      message: 'There have been changes made to this document that have not yet been saved. Click Continue to discard those changes.',
+      title: 'Quit with Unsaved Changes?',
+      message: 'Your changes will be lost if you do not save.',
       noLink: true, 
       buttons: [
         'Continue',
@@ -78,6 +78,23 @@ const Dialog = () => {
     return dialog.showMessageBox(window, options);
   };
 
+  const externalChangesUnsavedDialog = (window) => {
+    let options = {
+      type: 'warning',
+      title: 'Overwrite Current Unsaved Changes?',
+      message: 'Another application has changed this file. Load those changes?',
+      noLink: true,
+      buttons: [
+        'Yes',
+        'Cancel'
+      ],
+      defaultId: 0,
+      cancelId: 1
+    };
+
+    return dialog.showMessageBox(window, options);
+  }
+
   const errorDialog = (window, message) => {
     return dialog.showErrorBox(message.title, message.content);
   }
@@ -87,7 +104,8 @@ const Dialog = () => {
     saveNew: saveNewFileDialog,
     export: exportFileDialog, 
     overwrite: overwriteChangesDialog,
-    unsaved: unsavedChangesDialog,
+    quitUnsaved: quitWithUnsavedChangesDialog,
+    externalUnsaved: externalChangesUnsavedDialog,
     error: errorDialog,
   }
 };
