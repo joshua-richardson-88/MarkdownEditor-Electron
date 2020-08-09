@@ -59,6 +59,9 @@ div::-webkit-scrollbar-thumb {
   border-radius: 6px;
 }
 
+/* Get rid of the resizeability of the textarea */
+textarea { resize: none; }
+
 .controls {
   background-color: rgb(217, 241, 238);
   padding: 10px;
@@ -101,22 +104,18 @@ button:disabled {
   width: 50vw;
   flex-grow: 1;
   padding: 1em;
-  overflow: scroll;
+  overflow-y: scroll;
   font-size: 16px;
 }
 
 .raw-markdown {
-  border: 1px solid rgb(217, 241, 238);
-  background-color: rgb(217, 241, 238);
+  border: 1px solid rgb(230, 238, 237);
+  background-color: rgb(230, 238, 237);
 }
 
 .raw-markdown.drag-over {
   background-color: rgb(181, 220, 216);
-  border-color: rbg(75, 160, 151);
-}
-.raw-markdown.drag-error {
-  background-color: rgb(170, 57,57);
-  border-color: rgb(255, 170, 170);
+  border: 3px solid rgb(75, 160, 151);
 }
 
 .hide {

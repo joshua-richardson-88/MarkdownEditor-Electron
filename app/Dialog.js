@@ -49,7 +49,7 @@ const Dialog = () => {
       type: 'warning',
       title: 'Overwrite current unsaved changes?',
       message: 'Opening a new file in this window will overwrite you unsaved changes. Proceed anyways?',
-      noLink: true, 
+      noLink: true,
       buttons: [
         'Yes',
         'Cancel'
@@ -66,7 +66,7 @@ const Dialog = () => {
       type: 'warning',
       title: 'Quit with Unsaved Changes?',
       message: 'Your changes will be lost if you do not save.',
-      noLink: true, 
+      noLink: true,
       buttons: [
         'Continue',
         'Cancel'
@@ -95,14 +95,14 @@ const Dialog = () => {
     return dialog.showMessageBox(window, options);
   }
 
-  const errorDialog = (window, message) => {
+  const errorDialog = (message) => {
     return dialog.showErrorBox(message.title, message.content);
   }
 
   return {
     open: openFileDialog,
     saveNew: saveNewFileDialog,
-    export: exportFileDialog, 
+    export: exportFileDialog,
     overwrite: overwriteChangesDialog,
     quitUnsaved: quitWithUnsavedChangesDialog,
     externalUnsaved: externalChangesUnsavedDialog,

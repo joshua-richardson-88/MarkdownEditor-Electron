@@ -68,12 +68,12 @@ const startWatchingFiles = (event, filePath) => {
   // create a watcher object, and if it fires a "change" event, send the changes back
   const watcher = fs.watchFile(filePath, (event) => {
     dialog.externalUnsaved(currentWindow)
-    .then(user => {
-      if (user.response === 0) {
-        currentWindow.webContents.send('file-opened', packageFile(filePath))
-      }
-    })
-    .catch(error => console.log(error));
+      .then(user => {
+        if (user.response === 0) {
+          currentWindow.webContents.send('file-opened', packageFile(filePath))
+        }
+      })
+      .catch(error => console.log(error));
   });
 
   // Track the watcher so we can stop it later.
@@ -89,53 +89,76 @@ const stopWatchingFile = (windowToClose) => {
   }
 }
 
-const openFile = (event) => {
-  let currentWindow = windows.getWindow(event);
+const checkFileAllowed = (filePath) => {
+  // get the extension of the file
+  let ext = filePath.split('\\').pop().split('.')[1];
 
-  dialog.open(currentWindow)
-  .then(results => {
-    // if the user cancelled the window, return nothing
-    if (results.canceled) {
-      event.reply('file-opened', "");
-    } else {
-      //check if the file has a valid file type
-      let ext = results.filePaths[0].split('\\').pop().split('.')[1];
+  // return whether the filetype is valid or not
+  return (fileTypes.includes(ext)) ? true : false;
+}
 
-      if (fileTypes.includes(ext)) {
-        // start watching for external changes on the file
-        startWatchingFiles(event, results.filePaths[0]);
+const chooseFile = (currentWindow, event, path = null) => {
+  console.log('We either had no unsaved changes, or we are fine with wiping them')
+  //check to see if I have a file already in mind
+  if (path) {
+    console.log('We got a path already')
+    if (checkFileAllowed(path)) openFile(event, path);
+  } else {
+    console.log('We did not have a path to start with')
+    // if no pre-determined file, ask the user
+    dialog.open(currentWindow)
+      .then(results => {
+        console.log(`the user chose ${results.filePaths[0]}`)
+        // and see if the user chose a valid file
+        if (checkFileAllowed(results.filePaths[0])) openFile(event, results.filePaths[0]);
+      })
+      .catch(error => console.log(error));
+  }
+};
 
-        //otherwise return the contents of the file, and set the file in the OS recently viewed section
-        event.reply('file-opened', packageFile(results.filePaths[0]));
-      } else {
-        dialog.error({title: 'Invalid File Type', content: 'This application only supports .md, .markdown, or .txt files'});
-      }
-    }
-  })
-  .catch(err => console.log(err));
+const openFile = (event, pathToOpen) => {
+  // now that we have a filePath in mind, send to DOM 
+  // or let the user know they chose the wrong thing
+  if (pathToOpen) {
+    console.log('the path was valid, send back to dom')
+    startWatchingFiles(event, pathToOpen);
+    event.reply('file-opened', packageFile(pathToOpen));
+  } else {
+    console.log('the path was invalid, display error')
+    let options = {
+      title: 'Invalid File',
+      content: 'This application only supports .md, .markdown, and .txt files'
+    };
+    dialog.error(options);
+  }
 }
 
 // ipcMain functionality
 // Receiving
 // Open a file 
 ipcMain.on('open-file', (event, path) => {
+  console.log(path);
   // Before we open a file, check to see if there is editing done on a file already there
   let currentWindow = windows.getWindow(event);
   let edited = windows.getEdited(currentWindow);
-  
+
+  console.log('An open file call was made.');
+  console.log(`We got this path:`);
+  console.log(path)
+
   // if there is an open, edited file - warn the users
   if (edited) {
+    console.log('The document has unsaved changes')
     dialog.overwrite(currentWindow)
-    .then(user => {
-      // if the user chooses to continue, run the open file dialog
-      if (user.response === 0) {
-        openFile(event);
-      }
-    })
-    .catch(err => console.log(err));
+      .then(user => {
+        // if the user chooses to continue, try to open a file
+        if (user.response === 0) {
+          chooseFile(currentWindow, event, path)
+        }
+      })
+      .catch(err => console.log(err));
   } else {
-    // if there is no open file, show the open file dialog
-    openFile(event);
+    chooseFile(currentWindow, event, path);
   }
 });
 
@@ -144,12 +167,12 @@ ipcMain.on('export-html', (event, content) => {
   let currentWindow = windows.getWindow(event);
 
   dialog.export(currentWindow, defaultPath)
-  .then(results => {
-    if (results.filePath) {
-      fs.writeFileSync(results.filePath, content);
-    }
-  })
-  .catch(err => console.log(err));
+    .then(results => {
+      if (results.filePath) {
+        fs.writeFileSync(results.filePath, content);
+      }
+    })
+    .catch(err => console.log(err));
 });
 
 // Save the markdown to the file path
@@ -159,18 +182,18 @@ ipcMain.on('save-file', (event, content) => {
   // if the path property of content is empty, this is a new file
   if (!content.path) {
     dialog.saveNew(currentWindow, defaultPath)
-    .then(results => {
-      if (results.filePath) {
-        fs.writeFileSync(results.filePath, content.text);
-        app.addRecentDocument(results.filePath);
-      }
-      // set the window to not being edited anymore
-      windows.setProp(event, 'isEdited', false);
+      .then(results => {
+        if (results.filePath) {
+          fs.writeFileSync(results.filePath, content.text);
+          app.addRecentDocument(results.filePath);
+        }
+        // set the window to not being edited anymore
+        windows.setProp(event, 'isEdited', false);
 
-      // send back to renderer that the file saved successfully
-      event.reply('file-saved', { text: 'File Saved Successfully', status: 'success' });
-    })
-    .catch(err => event.reply('file-saved', { text: `File not saved successfully. ${err.message}`, status: 'error' }))
+        // send back to renderer that the file saved successfully
+        event.reply('file-saved', { text: 'File Saved Successfully', status: 'success' });
+      })
+      .catch(err => event.reply('file-saved', { text: `File not saved successfully. ${err.message}`, status: 'error' }))
   } else {
     //otherwise, save the file
     fs.writeFileSync(content.path, content.text);
@@ -200,13 +223,13 @@ ipcMain.on('close-window', (event, args) => {
   // if there are unsaved changes, we need to let the user know
   if (edited) {
     dialog.quitUnsaved(windowToClose)
-    .then(user => {
-      // if the user chooses to quit still, close the window
-      if (user.response === 0) {
-        windowToClose.destroy()
-      }
-    })
-    .catch(error => console.log(error));
+      .then(user => {
+        // if the user chooses to quit still, close the window
+        if (user.response === 0) {
+          windowToClose.destroy()
+        }
+      })
+      .catch(error => console.log(error));
   } else {
     // if the file wasn't edited, close the window
     windowToClose.destroy();

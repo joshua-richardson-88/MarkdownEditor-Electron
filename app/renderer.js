@@ -74,7 +74,7 @@ const updateUserInterface = (isEdited) => {
   // Enable buttons based on whether we are in an edited file
   saveMarkdownButton.disabled = !isEdited;
   revertButton.disabled = !isEdited;
-}
+};
 
 // helper function to cause a scroll event
 const updateScroll = () => {
@@ -83,7 +83,7 @@ const updateScroll = () => {
     htmlView.scrollTop = htmlView.scrollHeight;
   }
 
-}
+};
 
 // Pass the plain-text to the rendered markdown div
 markdownView.addEventListener("input", (event) => {
@@ -101,7 +101,7 @@ markdownView.addEventListener("input", (event) => {
 // when the markdown view has been scrolled, prevent it from scolling back
 markdownView.addEventListener('scroll', () => {
   scrolled = true;
-})
+});
 
 // Open File Action
 openFileButton.addEventListener("click", () => {
@@ -145,4 +145,28 @@ revertButton.addEventListener('click', () => {
   renderMarkdownToHtml(originalContent);
   updateUserInterface(false);
   document.title = loadedTitle;
+});
+
+
+
+// disable drag-and-drop page-wide
+document.addEventListener('dragstart', event => event.preventDefault());
+document.addEventListener('dragover', event => event.preventDefault());
+document.addEventListener('dragleave', event => event.preventDefault());
+document.addEventListener('drop', event => event.preventDefault());
+
+// enable drag-and-drop on the markdown editor div
+markdownView.addEventListener('dragover', (event) => {
+  markdownView.classList.add('drag-over');
+});
+
+markdownView.addEventListener('dragleave', () => {
+  markdownView.classList.remove('drag-over');
+});
+
+
+markdownView.addEventListener('drop', (event) => {
+  event.preventDefault();
+  window.api.send('open-file', event.dataTransfer.files[0].path);
+  markdownView.classList.remove('drag-over');
 });
