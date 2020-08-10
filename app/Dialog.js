@@ -110,4 +110,4 @@ const Dialog = () => {
   }
 };
 
-exports.dialog = Dialog();
+module.exports = Dialog();

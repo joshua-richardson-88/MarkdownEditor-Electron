@@ -1,12 +1,18 @@
-const { app, ipcMain } = require("electron");
+const { app, ipcMain, Menu } = require("electron");
 const path = require('path');
 const fs = require("fs");
 
+// Set the application name
+app.setName('Markdown Editor');
+
 // Require the windows factory function to track all of the windows
-const windows = require('./Window').windows;
+const windows = require('./Window');
 
 // Require the dialog factory function to deal with the various dialogs
-const dialog = require('./Dialog').dialog;
+const dialog = require('./Dialog');
+
+// Require the custom menu
+const applicationMenu = require('./application-menu');
 
 const pathToIndex = `file://${__dirname}/index.html`;
 const pathToBridge = path.join(__dirname, "renderBridge.js");
@@ -20,6 +26,7 @@ const defaultPath = app.getPath('documents');
 
 
 app.on("ready", () => {
+  Menu.setApplicationMenu(applicationMenu);
   windows.create(pathToIndex, pathToBridge);
 });
 
@@ -131,6 +138,10 @@ const openFile = (event, pathToOpen) => {
     };
     dialog.error(options);
   }
+}
+
+const createWindow = () => {
+  windows.createWindow(pathToIndex, pathToBridge);
 }
 
 // ipcMain functionality

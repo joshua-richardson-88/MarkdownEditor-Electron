@@ -53,7 +53,7 @@ const Windows = () => {
     });
 
     let windowObject = {
-      pane: newWindow, 
+      pane: newWindow,
       isEdited: false
     }
 
@@ -74,14 +74,14 @@ const Windows = () => {
         edited = window.isEdited;
       }
     })
-    
+
     return edited;
   };
 
   const setWindowProperty = (event, key, value) => {
     let windowToFind = getWindowFromEvent(event);
     windowSet.forEach(window => {
-      if (window.pane === windowToFind && window.hasOwnProperty(key)) window[key] = value; 
+      if (window.pane === windowToFind && window.hasOwnProperty(key)) window[key] = value;
     })
   };
 
@@ -93,4 +93,4 @@ const Windows = () => {
   }
 }
 
-exports.windows = Windows();
+module.exports = Windows();
